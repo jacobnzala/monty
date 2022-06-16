@@ -1,4 +1,5 @@
 #include"monty.h"
+#include <stdio.h>
 /**
  * error_arguments -Main entry
  *Description: If user doesnt give file or more than valid arguments
