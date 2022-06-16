@@ -1,87 +1,124 @@
 #include "monty.h"
-int number;
-/**
- * open_and_read -main entry.
- *Description:Function that open, read and execute.
- * @argv: arguments received by parameter
- * Return: void
- **/
-void open_and_read(char **argv)
-{
-/* prototype from struct instructions*/
-	void (*p_func)(stack_t **, unsigned int);
-	FILE *fp;
-	char *buf = NULL, *token = NULL, command[1024];
-	size_t len = 0;
-	size_t line_size;
-	unsigned int line_counter = 1;
-	stack_t *top = NULL;
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		open_error(argv);
-	while ((line_size = getline(&buf, &len, fp)) != EOF)
-	{
-		token = strtok(buf, "\n\t\r ");
-		if (token == '\0')
-			continue;
-		strcpy(command, token);
-		if (is_comment(token, line_counter) == 1)
-			continue;
-		if (strcmp(token, "push") == 0)
-		{
-			token = strtok(NULL, "\n\t\r ");
-			if (token == NULL || is_number(token) == -1)
-				not_int_err(line_counter);
-			number = atoi(token);
-        /*p_func will receive the function to execute*/
-			p_func = get_op_code(command, line_counter);
-     	/* p_func takes the place of the function to execute: push, pall, etc*/
-			p_func(&top, line_counter);
-		}
-		else
-		{
-			p_func = get_op_code(token, line_counter);
-			p_func(&top, line_counter);
-		}
-		line_counter++;
-	}
-	fclose(fp);
-	if (buf != NULL)
-		free(buf);
-	free_stack(top);
-}
 /**
- * is_number - check if string received is int or not
- * @token: string to check
- * Return: -1 if sring is not int or 1 if yes
+ * start_vars - Fake rand to jackpoint Giga Millions
+ * @var: Global variables to initialize
+ * Return: 0 Success, 1 Failed
  */
-int is_number(char *token)
+int start_vars(vars *var)
+{
+	var->file = NULL;
+	var->buff = NULL;
+	var->tmp = 0;
+	var->dict = create_instru();
+	if (var->dict == NULL)
+		return (EXIT_FAILURE);
+	var->head = NULL;
+	var->line_number = 1;
+	var->MODE = 0;
+
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * create_instru - Create new functions dictionary
+ * Return: Dictionary pointer
+ */
+instruction_t *create_instru()
+{
+	instruction_t *ptr = malloc(sizeof(instruction_t) * 18);
+
+	if (!ptr)
+	{
+		fprintf(stderr, "Error: malloc failed\n");
+		return (NULL);
+	}
+	ptr[0].opcode = "pall", ptr[0].f = pall;
+	ptr[1].opcode = "push", ptr[1].f = push;
+	ptr[2].opcode = "pint", ptr[2].f = pint;
+	ptr[3].opcode = "pop", ptr[3].f = pop;
+	ptr[4].opcode = "swap", ptr[4].f = swap;
+	ptr[5].opcode = "add", ptr[5].f = add;
+	ptr[6].opcode = "nop", ptr[6].f = NULL;
+	ptr[7].opcode = "sub", ptr[7].f = sub;
+	ptr[8].opcode = "div", ptr[8].f = divi;
+	ptr[9].opcode = "mul", ptr[9].f = mul;
+	ptr[10].opcode = "mod", ptr[10].f = mod;
+	ptr[11].opcode = "pchar", ptr[11].f = pchar;
+	ptr[12].opcode = "pstr", ptr[12].f = pstr;
+	ptr[13].opcode = "rotl", ptr[13].f = rotl;
+	ptr[14].opcode = "rotr", ptr[14].f = rotr;
+	ptr[15].opcode = "stack", ptr[15].f = stack;
+	ptr[16].opcode = "queue", ptr[16].f = queue;
+	ptr[17].opcode = NULL, ptr[17].f = NULL;
+
+	return (ptr);
+}
+
+/**
+ * call_funct - Call Functions
+ * @var: Global variables
+ * @opcode: Command to execute
+ * Return: None
+ */
+int call_funct(vars *var, char *opcode)
 {
 	int i;
 
-	if (token == NULL)
-		return (-1);
+	for (i = 0; var->dict[i].opcode; i++)
+		if (strcmp(opcode, var->dict[i].opcode) == 0)
+		{
+			if (!var->dict[i].f)
+				return (EXIT_SUCCESS);
+			var->dict[i].f(&var->head, var->line_number);
+			return (EXIT_SUCCESS);
+		}
+	if (strlen(opcode) != 0 && opcode[0] != '#')
+	{
+		fprintf(stderr, "L%u: unknown instruction %s\n",
+			var->line_number, opcode);
+		return (EXIT_FAILURE);
+	}
 
-	for (i = 0; token[i] != '\0'; i++)
-	{
-		if (token[i] != '-' && isdigit(token[i]) == 0)
-			return (-1);
-	}
-	return (1);
+	return (EXIT_SUCCESS);
 }
+
+
 /**
- * is_comment - check if string received is # or not
- * @token: string to check
- * @line_counter: line
- * Return: -1 if sring is not # or 1 if yes
+ * free_all - Clean all program mallocs
+ * Return: None
  */
-int is_comment(char *token, int line_counter)
+void free_all(void)
 {
-	if (token == NULL || token[0] == '#')
+	if (var.buff != NULL)
+		free(var.buff);
+	if (var.file != NULL)
+		fclose(var.file);
+	free(var.dict);
+	if (var.head != NULL)
 	{
-	line_counter++;
-	return (1);
+		while (var.head->next != NULL)
+		{
+			var.head = var.head->next;
+			free(var.head->prev);
+		}
+		free(var.head);
 	}
-	return (-1);
+}
+
+/**
+ * _isdigit - Clean all program mallocs
+ * @string: Num to validate
+ * Return: 0 Success, 1 Failed
+ */
+int _isdigit(char *string)
+{
+	int i;
+
+	for (i = 0; string[i]; i++)
+	{
+		if (string[i] < 48 || string[i] > 57)
+			return (1);
+	}
+	return (0);
 }
