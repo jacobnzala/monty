@@ -95,4 +95,9 @@ void _pchar(stack_t **top, unsigned int line_number);
 /*st4 */
 void pstr_stack(stack_t **top, unsigned int line_number);
 
+void pchar(stack_t **stack, unsigned int line_number);
+void pstr(stack_t **stack, unsigned int line_number);
+void rotl(stack_t **stack, unsigned int line_number);
+void rotr(stack_t **stack, unsigned int line_number);
+
 #endif /* _MONTY_H_ */
