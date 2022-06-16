@@ -1,4 +1,5 @@
 #include "monty.h"
+#include <stdio.h>
 /**
  * div_error - Print error if the stack contains less than two elements
  * @line: line

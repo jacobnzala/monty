@@ -1,4 +1,5 @@
 #include "monty.h"
+#include <stdio.h>
 /**
  * pchar_error - main entry
  * Description: error message if the value is not in the ascii table

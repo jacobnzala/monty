@@ -1,4 +1,5 @@
 #include "monty.h"
+#include <stdio.h>
 /**
  * get_op_code - contain the function that will perform the operation
  * @token: operation code
